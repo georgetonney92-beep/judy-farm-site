@@ -1,0 +1,812 @@
+<!doctype html>
+<html lang="en" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Juddy's Farm System</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    html, body, #app { height: 100%; }
+    body { font-family: 'Poppins', sans-serif; margin: 0; }
+    .font-display { font-family: 'Poppins', sans-serif; font-weight: 700; }
+    .sidebar-link { transition: all 0.2s ease; }
+    .sidebar-link:hover, .sidebar-link.active { background: rgba(255,255,255,0.15); }
+    .card-hover { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+    .card-hover:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(34,197,94,0.15); }
+    .fade-in { animation: fadeIn 0.4s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    input, select, textarea { font-family: 'Poppins', sans-serif; }
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #22c55e; border-radius: 3px; }
+    .progress-bar { background: linear-gradient(90deg, #22c55e, #16a34a); }
+    .badge { display: inline-block; padding: 4px 12px; border-radius: 9999px; font-size: 12px; font-weight: 600; }
+    .badge-paid { background: #dcfce7; color: #166534; }
+    .badge-pending { background: #fef3c7; color: #92400e; }
+    .badge-overdue { background: #fee2e2; color: #991b1b; }
+  </style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>body { box-sizing: border-box; }</style>
+ </head>
+ <body class="h-full">
+  <div id="app" class="flex h-full w-full" style="background:#f8fafc;">
+   <!-- Sidebar -->
+   <aside class="w-64 flex-shrink-0 flex flex-col overflow-hidden" style="background:linear-gradient(180deg,#1f2937 0%,#111827 100%);color:#fff;">
+    <div class="p-6 border-b border-white/20">
+     <div class="flex items-center gap-3">
+      <div class="w-11 h-11 rounded-xl flex items-center justify-center text-2xl" style="background:linear-gradient(135deg,#10b981 0%,#059669 100%);">
+       🌾
+      </div>
+      <div>
+       <h1 class="font-display text-white text-lg font-bold">Juddy's Farm</h1>
+       <p class="text-emerald-300 text-xs mt-0.5">Management System</p>
+      </div>
+     </div>
+    </div>
+    <nav class="flex-1 p-3 space-y-1 overflow-y-auto">
+     <button onclick="switchTab('dashboard')" data-tab="dashboard" class="sidebar-link active w-full flex items-center gap-3 px-4 py-3 rounded-lg text-white/90 text-sm font-medium hover:text-white"> <i data-lucide="grid-3x3" style="width:18px;height:18px;"></i> Dashboard </button> <button onclick="switchTab('budget')" data-tab="budget" class="sidebar-link w-full flex items-center gap-3 px-4 py-3 rounded-lg text-white/90 text-sm font-medium hover:text-white"> <i data-lucide="wallet" style="width:18px;height:18px;"></i> Farm Budget </button> <button onclick="switchTab('expenditure')" data-tab="expenditure" class="sidebar-link w-full flex items-center gap-3 px-4 py-3 rounded-lg text-white/90 text-sm font-medium hover:text-white"> <i data-lucide="trending-down" style="width:18px;height:18px;"></i> Expenditure </button> <button onclick="switchTab('crops')" data-tab="crops" class="sidebar-link w-full flex items-center gap-3 px-4 py-3 rounded-lg text-white/90 text-sm font-medium hover:text-white"> <i data-lucide="leaf" style="width:18px;height:18px;"></i> Crops </button> <button onclick="switchTab('medications')" data-tab="medications" class="sidebar-link w-full flex items-center gap-3 px-4 py-3 rounded-lg text-white/90 text-sm font-medium hover:text-white"> <i data-lucide="capsules" style="width:18px;height:18px;"></i> Medications </button> <button onclick="switchTab('inventory')" data-tab="inventory" class="sidebar-link w-full flex items-center gap-3 px-4 py-3 rounded-lg text-white/90 text-sm font-medium hover:text-white"> <i data-lucide="package" style="width:18px;height:18px;"></i> Inventory </button> <button onclick="switchTab('workers')" data-tab="workers" class="sidebar-link w-full flex items-center gap-3 px-4 py-3 rounded-lg text-white/90 text-sm font-medium hover:text-white"> <i data-lucide="users" style="width:18px;height:18px;"></i> Workers </button> <button onclick="switchTab('harvest')" data-tab="harvest" class="sidebar-link w-full flex items-center gap-3 px-4 py-3 rounded-lg text-white/90 text-sm font-medium hover:text-white"> <i data-lucide="wheat" style="width:18px;height:18px;"></i> Harvest </button>
+    </nav>
+   </aside><!-- Main Content -->
+   <main class="flex-1 flex flex-col overflow-hidden">
+    <header class="bg-white border-b border-gray-200 px-8 py-6 flex items-center justify-between">
+     <h2 id="page-title" class="font-display text-2xl text-gray-800">Dashboard</h2>
+    </header>
+    <div class="flex-1 overflow-auto p-8">
+     <!-- Dashboard Tab -->
+     <div id="dashboard-content" class="tab-content fade-in">
+      <div class="max-w-7xl mx-auto">
+       <h3 class="font-display text-xl text-gray-700 mb-6">Farm Overview</h3>
+       <div class="grid grid-cols-4 gap-6 mb-8">
+        <div class="bg-white rounded-lg shadow p-6 card-hover" style="border-top:4px solid #10b981;">
+         <p class="text-gray-600 text-sm mb-2">Total Budget</p>
+         <p id="dashboard-budget" class="font-display text-3xl text-emerald-600">$0</p>
+         <p class="text-gray-500 text-xs mt-2">Farm Budget</p>
+        </div>
+        <div class="bg-white rounded-lg shadow p-6 card-hover" style="border-top:4px solid #ef4444;">
+         <p class="text-gray-600 text-sm mb-2">Total Expenses</p>
+         <p id="dashboard-expenses" class="font-display text-3xl text-red-600">$0</p>
+         <p class="text-gray-500 text-xs mt-2">All Costs</p>
+        </div>
+        <div class="bg-white rounded-lg shadow p-6 card-hover" style="border-top:4px solid #3b82f6;">
+         <p class="text-gray-600 text-sm mb-2">Active Crops</p>
+         <p id="dashboard-crops" class="font-display text-3xl text-blue-600">0</p>
+         <p class="text-gray-500 text-xs mt-2">Currently Planted</p>
+        </div>
+        <div class="bg-white rounded-lg shadow p-6 card-hover" style="border-top:4px solid #f59e0b;">
+         <p class="text-gray-600 text-sm mb-2">Workers</p>
+         <p id="dashboard-workers" class="font-display text-3xl text-amber-600">0</p>
+         <p class="text-gray-500 text-xs mt-2">Farm Team</p>
+        </div>
+       </div>
+       <div class="grid grid-cols-2 gap-6 mb-8">
+        <div class="bg-white rounded-lg shadow p-6">
+         <h4 class="font-display text-lg text-gray-700 mb-4">Weather - Narok, Kenya</h4>
+         <div id="weather-widget" class="space-y-3">
+          <div class="flex items-center justify-between p-4 bg-blue-50 rounded-lg">
+           <div>
+            <p class="text-2xl">☀️</p>
+            <p class="text-sm text-gray-600 mt-1">Current</p>
+           </div>
+           <div class="text-right">
+            <p id="weather-temp" class="font-display text-2xl text-gray-800">--°C</p>
+            <p id="weather-condition" class="text-sm text-gray-600">Loading...</p>
+           </div>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+           <div class="p-3 bg-gray-50 rounded">
+            <p class="text-xs text-gray-600">Humidity</p>
+            <p id="weather-humidity" class="font-semibold text-gray-800">--%</p>
+           </div>
+           <div class="p-3 bg-gray-50 rounded">
+            <p class="text-xs text-gray-600">Wind Speed</p>
+            <p id="weather-wind" class="font-semibold text-gray-800">-- km/h</p>
+           </div>
+          </div>
+         </div>
+        </div>
+        <div class="bg-white rounded-lg shadow p-6">
+         <h4 class="font-display text-lg text-gray-700 mb-4">Expenditure Breakdown</h4>
+         <canvas id="expenditureChart" style="max-height: 300px;"></canvas>
+        </div>
+       </div>
+      </div>
+     </div>
+     <div class="max-w-6xl mx-auto">
+      <h3 class="font-display text-xl text-gray-700 mb-6">Farm Budget Overview</h3>
+      <div class="grid grid-cols-3 gap-6 mb-8">
+       <div class="bg-white rounded-lg shadow p-6 card-hover">
+        <p class="text-gray-600 text-sm mb-2">Total Budget</p>
+        <p id="total-budget" class="font-display text-3xl text-emerald-600">$0</p>
+       </div>
+       <div class="bg-white rounded-lg shadow p-6 card-hover">
+        <p class="text-gray-600 text-sm mb-2">Total Spent</p>
+        <p id="total-spent" class="font-display text-3xl text-red-600">$0</p>
+       </div>
+       <div class="bg-white rounded-lg shadow p-6 card-hover">
+        <p class="text-gray-600 text-sm mb-2">Remaining</p>
+        <p id="remaining-budget" class="font-display text-3xl text-blue-600">$0</p>
+       </div>
+      </div>
+      <div class="bg-white rounded-lg shadow p-6 mb-6">
+       <h4 class="font-display text-lg text-gray-700 mb-4">Set Farm Budget</h4>
+       <div class="flex gap-4"><input type="number" id="budget-input" placeholder="Enter budget amount" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"> <button onclick="setBudget()" class="px-6 py-2 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700">Set Budget</button>
+       </div>
+      </div>
+      <div class="bg-white rounded-lg shadow p-6">
+       <h4 class="font-display text-lg text-gray-700 mb-4">Budget Status</h4>
+       <div id="budget-status" class="text-lg text-gray-600">
+        No budget set yet
+       </div>
+      </div>
+     </div>
+    </div><!-- Monthly Expenditure Tab -->
+    <div id="expenditure-content" class="tab-content fade-in hidden">
+     <div class="max-w-6xl mx-auto">
+      <h3 class="font-display text-xl text-gray-700 mb-6">Farm Expenditure</h3>
+      <div class="bg-white rounded-lg shadow p-6 mb-6">
+       <h4 class="font-display text-lg text-gray-700 mb-4">Add Expense</h4>
+       <div class="grid grid-cols-4 gap-4 mb-4">
+        <select id="expense-type" class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"> <option value="">Select Expense Type</option> <option value="Capital Investment">Capital Investment</option> <option value="Direct Cost - Material">Direct Cost - Material</option> <option value="Direct Cost - Labour">Direct Cost - Labour</option> <option value="Indirect Cost - Overhead">Indirect Cost - Overhead</option> </select> <input type="number" id="expense-amount" placeholder="Amount" class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"> <input type="date" id="expense-date" class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"> <input type="text" id="expense-description" placeholder="Description" class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500">
+       </div><button onclick="addExpense()" class="w-full px-6 py-2 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700">Add Expense</button>
+      </div>
+      <div class="grid grid-cols-4 gap-6 mb-6">
+       <div class="bg-white rounded-lg shadow p-6 card-hover" style="border-left:4px solid #3b82f6;">
+        <p class="text-gray-600 text-sm mb-2">Capital Investment</p>
+        <p id="expense-capital" class="font-display text-2xl text-blue-600">$0</p>
+       </div>
+       <div class="bg-white rounded-lg shadow p-6 card-hover" style="border-left:4px solid #8b5cf6;">
+        <p class="text-gray-600 text-sm mb-2">Direct - Material</p>
+        <p id="expense-material" class="font-display text-2xl text-purple-600">$0</p>
+       </div>
+       <div class="bg-white rounded-lg shadow p-6 card-hover" style="border-left:4px solid #f59e0b;">
+        <p class="text-gray-600 text-sm mb-2">Direct - Labour</p>
+        <p id="expense-labour" class="font-display text-2xl text-amber-600">$0</p>
+       </div>
+       <div class="bg-white rounded-lg shadow p-6 card-hover" style="border-left:4px solid #ef4444;">
+        <p class="text-gray-600 text-sm mb-2">Indirect - Overhead</p>
+        <p id="expense-overhead" class="font-display text-2xl text-red-600">$0</p>
+       </div>
+      </div>
+      <div class="bg-white rounded-lg shadow overflow-hidden">
+       <table class="w-full">
+        <thead class="bg-gray-100 border-b">
+         <tr>
+          <th class="px-6 py-3 text-left text-sm font-medium text-gray-700">Date</th>
+          <th class="px-6 py-3 text-left text-sm font-medium text-gray-700">Type</th>
+          <th class="px-6 py-3 text-left text-sm font-medium text-gray-700">Description</th>
+          <th class="px-6 py-3 text-left text-sm font-medium text-gray-700">Amount</th>
+          <th class="px-6 py-3 text-center text-sm font-medium text-gray-700">Action</th>
+         </tr>
+        </thead>
+        <tbody id="expenses-list"></tbody>
+       </table>
+      </div>
+     </div>
+    </div><!-- Crops Tab -->
+    <div id="crops-content" class="tab-content fade-in hidden">
+     <div class="max-w-6xl mx-auto">
+      <h3 class="font-display text-xl text-gray-700 mb-6">Crops Management</h3>
+      <div class="bg-white rounded-lg shadow p-6 mb-6">
+       <h4 class="font-display text-lg text-gray-700 mb-4">Plant New Crop</h4>
+       <div class="grid grid-cols-4 gap-4 mb-4">
+        <select id="crop-name" class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"> <option value="">Select Crop</option> <option value="Maize">Maize</option> <option value="Beans">Beans</option> <option value="Trees">Trees</option> </select> <input type="date" id="crop-date" placeholder="Planting date" class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"> <input type="number" id="crop-area" placeholder="Area (acres)" class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"> <input type="number" id="crop-yield" placeholder="Expected yield" class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500">
+       </div><button onclick="addCrop()" class="w-full px-6 py-2 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700">Add Crop</button>
+      </div>
+      <div class="bg-white rounded-lg shadow overflow-hidden">
+       <table class="w-full">
+        <thead class="bg-gray-100 border-b">
+         <tr>
+          <th class="px-6 py-3 text-left text-sm font-medium text-gray-700">Crop Name</th>
+          <th class="px-6 py-3 text-left text-sm font-medium text-gray-700">Planting Date</th>
+          <th class="px-6 py-3 text-left text-sm font-medium text-gray-700">Area (acres)</th>
+          <th class="px-6 py-3 text-left text-sm font-medium text-gray-700">Expected Yield</th>
+          <th class="px-6 py-3 text-center text-sm font-medium text-gray-700">Action</th>
+         </tr>
+        </thead>
+        <tbody id="crops-list"></tbody>
+       </table>
+      </div>
+     </div>
+    </div><!-- Medications Tab -->
+    <div id="medications-content" class="tab-content fade-in hidden">
+     <div class="max-w-6xl mx-auto">
+      <h3 class="font-display text-xl text-gray-700 mb-6">Medications &amp; Treatments</h3>
+      <div class="bg-white rounded-lg shadow p-6 mb-6">
+       <h4 class="font-display text-lg text-gray-700 mb-4">Add Medication</h4>
+       <div class="grid grid-cols-4 gap-4 mb-4">
+        <input type="text" id="med-name" placeholder="Medication name" class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"> <input type="text" id="med-dosage" placeholder="Dosage" class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"> <input type="number" id="med-quantity" placeholder="Quantity" class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"> <select id="med-type" class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"> <option value="">Prescription Type</option> <option value="Preventive">Preventive</option> <option value="Curative">Curative</option> <option value="Maintenance">Maintenance</option> </select>
+       </div>
+       <div class="flex gap-4"><input type="date" id="med-review" placeholder="Review date" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"> <button onclick="addMedication()" class="px-6 py-2 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700">Add Medication</button>
+       </div>
+      </div>
+      <div class="bg-white rounded-lg shadow overflow-hidden">
+       <table class="w-full">
+        <thead class="bg-gray-100 border-b">
+         <tr>
+          <th class="px-6 py-3 text-left text-sm font-medium text-gray-700">Medication</th>
+          <th class="px-6 py-3 text-left text-sm font-medium text-gray-700">Dosage</th>
+          <th class="px-6 py-3 text-left text-sm font-medium text-gray-700">Quantity</th>
+          <th class="px-6 py-3 text-left text-sm font-medium text-gray-700">Type</th>
+          <th class="px-6 py-3 text-left text-sm font-medium text-gray-700">Review Date</th>
+          <th class="px-6 py-3 text-center text-sm font-medium text-gray-700">Action</th>
+         </tr>
+        </thead>
+        <tbody id="medications-list"></tbody>
+       </table>
+      </div>
+     </div>
+    </div><!-- Inventory Tab -->
+    <div id="inventory-content" class="tab-content fade-in hidden">
+     <div class="max-w-6xl mx-auto">
+      <h3 class="font-display text-xl text-gray-700 mb-6">Inventory Management</h3>
+      <div class="bg-white rounded-lg shadow p-6 mb-6">
+       <h4 class="font-display text-lg text-gray-700 mb-4">Add Inventory Item</h4>
+       <div class="grid grid-cols-4 gap-4 mb-4">
+        <input type="text" id="inv-item" placeholder="Item name" class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"> <select id="inv-type" class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"> <option value="">Item Type</option> <option value="Seeds">Seeds</option> <option value="Fertilizers">Fertilizers</option> <option value="Pesticides">Pesticides</option> <option value="Fuel">Fuel</option> <option value="Crops">Crops</option> </select> <input type="number" id="inv-quantity" placeholder="Current quantity" class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"> <select id="inv-unit" class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"> <option value="">Unit of Measure</option> <option value="kg">Kilograms (kg)</option> <option value="bags">Bags</option> <option value="liters">Liters</option> <option value="bales">Bales</option> <option value="units">Units</option> </select>
+       </div>
+       <div class="flex gap-4"><input type="number" id="inv-reorder" placeholder="Reorder level" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"> <button onclick="addInventoryItem()" class="px-6 py-2 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700">Add Item</button>
+       </div>
+      </div>
+      <div class="bg-white rounded-lg shadow overflow-hidden">
+       <table class="w-full">
+        <thead class="bg-gray-100 border-b">
+         <tr>
+          <th class="px-6 py-3 text-left text-sm font-medium text-gray-700">Item Name</th>
+          <th class="px-6 py-3 text-left text-sm font-medium text-gray-700">Type</th>
+          <th class="px-6 py-3 text-left text-sm font-medium text-gray-700">Current Stock</th>
+          <th class="px-6 py-3 text-left text-sm font-medium text-gray-700">Unit</th>
+          <th class="px-6 py-3 text-left text-sm font-medium text-gray-700">Reorder Level</th>
+          <th class="px-6 py-3 text-left text-sm font-medium text-gray-700">Status</th>
+          <th class="px-6 py-3 text-center text-sm font-medium text-gray-700">Action</th>
+         </tr>
+        </thead>
+        <tbody id="inventory-list"></tbody>
+       </table>
+      </div>
+     </div>
+    </div><!-- Workers Tab -->
+    <div id="workers-content" class="tab-content fade-in hidden">
+     <div class="max-w-6xl mx-auto">
+      <h3 class="font-display text-xl text-gray-700 mb-6">Farm Workers</h3>
+      <div class="bg-white rounded-lg shadow p-6 mb-6">
+       <h4 class="font-display text-lg text-gray-700 mb-4">Add Worker</h4>
+       <div class="grid grid-cols-3 gap-4 mb-4">
+        <input type="text" id="worker-name" placeholder="Worker name" class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"> <input type="tel" id="worker-phone" placeholder="Phone number" class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"> <input type="text" id="worker-role" placeholder="Role/Position" class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500">
+       </div><button onclick="addWorker()" class="w-full px-6 py-2 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700">Add Worker</button>
+      </div>
+      <div class="bg-white rounded-lg shadow overflow-hidden">
+       <table class="w-full">
+        <thead class="bg-gray-100 border-b">
+         <tr>
+          <th class="px-6 py-3 text-left text-sm font-medium text-gray-700">Name</th>
+          <th class="px-6 py-3 text-left text-sm font-medium text-gray-700">Phone Number</th>
+          <th class="px-6 py-3 text-left text-sm font-medium text-gray-700">Role</th>
+          <th class="px-6 py-3 text-center text-sm font-medium text-gray-700">Action</th>
+         </tr>
+        </thead>
+        <tbody id="workers-list"></tbody>
+       </table>
+      </div>
+     </div>
+    </div><!-- Harvest Tab -->
+    <div id="harvest-content" class="tab-content fade-in hidden">
+     <div class="max-w-6xl mx-auto">
+      <h3 class="font-display text-xl text-gray-700 mb-6">Harvest Records</h3>
+      <div class="bg-white rounded-lg shadow p-6 mb-6">
+       <h4 class="font-display text-lg text-gray-700 mb-4">Record Harvest</h4>
+       <div class="grid grid-cols-4 gap-4 mb-4">
+        <select id="harvest-crop" class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"> <option value="">Select Crop</option> <option value="Maize">Maize</option> <option value="Beans">Beans</option> <option value="Trees">Trees</option> </select> <input type="date" id="harvest-date" placeholder="Harvest date" class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"> <input type="text" id="harvest-section" placeholder="Crop section" class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"> <input type="text" id="harvest-location" placeholder="Location (Narok)" class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500" value="Narok">
+       </div>
+       <div class="grid grid-cols-3 gap-4 mb-4">
+        <input type="number" id="harvest-quantity" placeholder="Quantity harvested" class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"> <select id="harvest-unit" class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"> <option value="">Unit</option> <option value="kg">Kilograms</option> <option value="bags">Bags</option> <option value="bales">Bales</option> <option value="units">Units</option> </select> <input type="text" id="harvest-quality" placeholder="Quality metric (Good/Fair/Poor)" class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500">
+       </div><button onclick="addHarvest()" class="w-full px-6 py-2 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700">Record Harvest</button>
+      </div>
+      <div class="bg-white rounded-lg shadow overflow-hidden">
+       <table class="w-full">
+        <thead class="bg-gray-100 border-b">
+         <tr>
+          <th class="px-6 py-3 text-left text-sm font-medium text-gray-700">Crop</th>
+          <th class="px-6 py-3 text-left text-sm font-medium text-gray-700">Harvest Date</th>
+          <th class="px-6 py-3 text-left text-sm font-medium text-gray-700">Section</th>
+          <th class="px-6 py-3 text-left text-sm font-medium text-gray-700">Quantity</th>
+          <th class="px-6 py-3 text-left text-sm font-medium text-gray-700">Location</th>
+          <th class="px-6 py-3 text-left text-sm font-medium text-gray-700">Quality</th>
+          <th class="px-6 py-3 text-center text-sm font-medium text-gray-700">Action</th>
+         </tr>
+        </thead>
+        <tbody id="harvest-list"></tbody>
+       </table>
+      </div>
+     </div>
+    </div>
+   </main>
+  </div>
+  <script>
+    let allData = {};
+    let chartInstance = null;
+
+    // Initialize SDK
+    async function initializeApp() {
+      const dataHandler = {
+        onDataChanged(data) {
+          allData = {};
+          data.forEach(item => {
+            let category = 'other';
+            if (item.expense_type) category = 'expense';
+            else if (item.crop_name) category = 'crop';
+            else if (item.medication_name) category = 'medication';
+            else if (item.inventory_item) category = 'inventory';
+            else if (item.worker_name) category = 'worker';
+            else if (item.harvest_crop) category = 'harvest';
+            
+            if (!allData[category]) allData[category] = [];
+            allData[category].push(item);
+          });
+          updateDashboard();
+          renderExpensesList();
+          renderCropsList();
+          renderMedicationsList();
+          renderInventoryList();
+          renderWorkersList();
+          renderHarvestList();
+          updateBudgetDisplay();
+          updateExpenditureChart();
+        }
+      };
+
+      if (window.dataSdk) {
+        await window.dataSdk.init(dataHandler);
+      }
+    }
+
+    // Weather Widget - Fetch weather for Narok
+    async function loadWeather() {
+      try {
+        const response = await fetch('https://api.open-meteo.com/v1/forecast?latitude=-9.4241&longitude=35.3922&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m');
+        const data = await response.json();
+        if (data.current) {
+          const temp = Math.round(data.current.temperature_2m);
+          const humidity = data.current.relative_humidity_2m;
+          const wind = Math.round(data.current.wind_speed_10m);
+          
+          document.getElementById('weather-temp').textContent = temp + '°C';
+          document.getElementById('weather-humidity').textContent = humidity + '%';
+          document.getElementById('weather-wind').textContent = wind + ' km/h';
+          
+          const conditions = {0: 'Clear', 1: 'Cloudy', 2: 'Overcast', 3: 'Rainy', 45: 'Foggy', 48: 'Foggy', 51: 'Light Rain', 53: 'Moderate Rain', 55: 'Heavy Rain', 61: 'Showers', 63: 'Heavy Showers', 80: 'Rain Showers', 81: 'Heavy Showers', 95: 'Thunderstorm'};
+          document.getElementById('weather-condition').textContent = conditions[data.current.weather_code] || 'Checking...';
+        }
+      } catch (e) {
+        console.error('Weather fetch failed:', e);
+      }
+    }
+
+    // Dashboard Update
+    function updateDashboard() {
+      const budget = parseFloat(localStorage.getItem('farmBudget')) || 0;
+      let totalExpenses = 0;
+      let totalCrops = 0;
+      let totalWorkers = 0;
+
+      (allData['expense'] || []).forEach(e => totalExpenses += e.expense_amount);
+      totalCrops = (allData['crop'] || []).length;
+      totalWorkers = (allData['worker'] || []).length;
+
+      document.getElementById('dashboard-budget').textContent = '$' + budget.toFixed(2);
+      document.getElementById('dashboard-expenses').textContent = '$' + totalExpenses.toFixed(2);
+      document.getElementById('dashboard-crops').textContent = totalCrops;
+      document.getElementById('dashboard-workers').textContent = totalWorkers;
+    }
+
+    // Budget Functions
+    function setBudget() {
+      const budget = parseFloat(document.getElementById('budget-input').value);
+      if (!budget || budget <= 0) return alert('Please enter a valid budget amount');
+      localStorage.setItem('farmBudget', budget);
+      updateBudgetDisplay();
+      updateDashboard();
+      document.getElementById('budget-input').value = '';
+    }
+
+    function updateBudgetDisplay() {
+      const budget = parseFloat(localStorage.getItem('farmBudget')) || 0;
+      let totalSpent = 0;
+      
+      (allData['expense'] || []).forEach(item => {
+        totalSpent += item.expense_amount;
+      });
+
+      const remaining = budget - totalSpent;
+      document.getElementById('total-budget').textContent = '$' + budget.toFixed(2);
+      document.getElementById('total-spent').textContent = '$' + totalSpent.toFixed(2);
+      document.getElementById('remaining-budget').textContent = '$' + remaining.toFixed(2);
+
+      if (budget === 0) {
+        document.getElementById('budget-status').textContent = 'No budget set yet';
+      } else if (totalSpent > budget) {
+        document.getElementById('budget-status').innerHTML = `<span class="text-red-600 font-semibold">⚠️ Over budget by $${(totalSpent - budget).toFixed(2)}</span>`;
+      } else if (totalSpent > budget * 0.8) {
+        document.getElementById('budget-status').innerHTML = `<span class="text-yellow-600 font-semibold">⚡ Caution: ${((totalSpent/budget)*100).toFixed(0)}% of budget spent</span>`;
+      } else {
+        document.getElementById('budget-status').innerHTML = `<span class="text-emerald-600 font-semibold">✓ On track - ${((totalSpent/budget)*100).toFixed(0)}% used</span>`;
+      }
+    }
+
+    // Expense Functions
+    async function addExpense() {
+      const type = document.getElementById('expense-type').value;
+      const amount = parseFloat(document.getElementById('expense-amount').value);
+      const date = document.getElementById('expense-date').value;
+      const description = document.getElementById('expense-description').value;
+
+      if (!type || !amount || !date) return alert('Please fill all required fields');
+
+      if (window.dataSdk) {
+        await window.dataSdk.create({
+          expense_type: type,
+          expense_amount: amount,
+          expense_date: date,
+          expense_description: description
+        });
+      }
+
+      document.getElementById('expense-type').value = '';
+      document.getElementById('expense-amount').value = '';
+      document.getElementById('expense-date').value = '';
+      document.getElementById('expense-description').value = '';
+    }
+
+    function renderExpensesList() {
+      const tbody = document.getElementById('expenses-list');
+      tbody.innerHTML = '';
+      const items = allData['expense'] || [];
+      items.forEach(item => {
+        tbody.innerHTML += `
+          <tr class="border-b hover:bg-gray-50">
+            <td class="px-6 py-3 text-gray-700">${item.expense_date}</td>
+            <td class="px-6 py-3 text-gray-700">${item.expense_type}</td>
+            <td class="px-6 py-3 text-gray-700">${item.expense_description || '-'}</td>
+            <td class="px-6 py-3 text-gray-700">$${item.expense_amount.toFixed(2)}</td>
+            <td class="px-6 py-3 text-center">
+              <button onclick="deleteRecord('${item.__backendId}', 'expense')" class="text-red-600 hover:text-red-800 text-sm font-medium">Delete</button>
+            </td>
+          </tr>
+        `;
+      });
+
+      updateExpenditureBreakdown();
+    }
+
+    function updateExpenditureBreakdown() {
+      const items = allData['expense'] || [];
+      let capital = 0, material = 0, labour = 0, overhead = 0;
+
+      items.forEach(item => {
+        if (item.expense_type === 'Capital Investment') capital += item.expense_amount;
+        else if (item.expense_type === 'Direct Cost - Material') material += item.expense_amount;
+        else if (item.expense_type === 'Direct Cost - Labour') labour += item.expense_amount;
+        else if (item.expense_type === 'Indirect Cost - Overhead') overhead += item.expense_amount;
+      });
+
+      document.getElementById('expense-capital').textContent = '$' + capital.toFixed(2);
+      document.getElementById('expense-material').textContent = '$' + material.toFixed(2);
+      document.getElementById('expense-labour').textContent = '$' + labour.toFixed(2);
+      document.getElementById('expense-overhead').textContent = '$' + overhead.toFixed(2);
+    }
+
+    // Crop Functions
+    async function addCrop() {
+      const name = document.getElementById('crop-name').value;
+      const date = document.getElementById('crop-date').value;
+      const area = parseFloat(document.getElementById('crop-area').value);
+      const yield_val = parseFloat(document.getElementById('crop-yield').value);
+
+      if (!name || !date || !area) return alert('Please fill all fields');
+
+      if (window.dataSdk) {
+        await window.dataSdk.create({
+          crop_name: name,
+          planting_date: date,
+          area_size: area,
+          yield_expected: yield_val
+        });
+      }
+
+      document.getElementById('crop-name').value = '';
+      document.getElementById('crop-date').value = '';
+      document.getElementById('crop-area').value = '';
+      document.getElementById('crop-yield').value = '';
+    }
+
+    function renderCropsList() {
+      const tbody = document.getElementById('crops-list');
+      tbody.innerHTML = '';
+      const items = allData['crop'] || [];
+      items.forEach(item => {
+        tbody.innerHTML += `
+          <tr class="border-b hover:bg-gray-50">
+            <td class="px-6 py-3 text-gray-700">${item.crop_name}</td>
+            <td class="px-6 py-3 text-gray-700">${item.planting_date}</td>
+            <td class="px-6 py-3 text-gray-700">${item.area_size} acres</td>
+            <td class="px-6 py-3 text-gray-700">${item.yield_expected || '-'}</td>
+            <td class="px-6 py-3 text-center">
+              <button onclick="deleteRecord('${item.__backendId}', 'crop')" class="text-red-600 hover:text-red-800 text-sm font-medium">Delete</button>
+            </td>
+          </tr>
+        `;
+      });
+    }
+
+    // Medication Functions
+    async function addMedication() {
+      const name = document.getElementById('med-name').value;
+      const dosage = document.getElementById('med-dosage').value;
+      const quantity = parseFloat(document.getElementById('med-quantity').value);
+      const type = document.getElementById('med-type').value;
+      const review = document.getElementById('med-review').value;
+
+      if (!name || !dosage || !quantity || !type) return alert('Please fill all fields');
+
+      if (window.dataSdk) {
+        await window.dataSdk.create({
+          medication_name: name,
+          dosage: dosage,
+          quantity: quantity,
+          prescription_type: type,
+          review_date: review
+        });
+      }
+
+      document.getElementById('med-name').value = '';
+      document.getElementById('med-dosage').value = '';
+      document.getElementById('med-quantity').value = '';
+      document.getElementById('med-type').value = '';
+      document.getElementById('med-review').value = '';
+    }
+
+    function renderMedicationsList() {
+      const tbody = document.getElementById('medications-list');
+      tbody.innerHTML = '';
+      const items = allData['medication'] || [];
+      items.forEach(item => {
+        tbody.innerHTML += `
+          <tr class="border-b hover:bg-gray-50">
+            <td class="px-6 py-3 text-gray-700">${item.medication_name}</td>
+            <td class="px-6 py-3 text-gray-700">${item.dosage}</td>
+            <td class="px-6 py-3 text-gray-700">${item.quantity}</td>
+            <td class="px-6 py-3 text-gray-700"><span class="px-3 py-1 rounded-full text-sm ${item.prescription_type === 'Preventive' ? 'bg-blue-100 text-blue-800' : item.prescription_type === 'Curative' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800'}">${item.prescription_type}</span></td>
+            <td class="px-6 py-3 text-gray-700">${item.review_date}</td>
+            <td class="px-6 py-3 text-center">
+              <button onclick="deleteRecord('${item.__backendId}', 'medication')" class="text-red-600 hover:text-red-800 text-sm font-medium">Delete</button>
+            </td>
+          </tr>
+        `;
+      });
+    }
+
+    // Inventory Functions
+    async function addInventoryItem() {
+      const item = document.getElementById('inv-item').value;
+      const type = document.getElementById('inv-type').value;
+      const quantity = parseFloat(document.getElementById('inv-quantity').value);
+      const unit = document.getElementById('inv-unit').value;
+      const reorder = parseFloat(document.getElementById('inv-reorder').value);
+
+      if (!item || !type || !quantity || !unit) return alert('Please fill all fields');
+
+      if (window.dataSdk) {
+        await window.dataSdk.create({
+          inventory_item: item,
+          inventory_type: type,
+          current_quantity: quantity,
+          measure_unit: unit,
+          reorder_level: reorder || 0
+        });
+      }
+
+      document.getElementById('inv-item').value = '';
+      document.getElementById('inv-type').value = '';
+      document.getElementById('inv-quantity').value = '';
+      document.getElementById('inv-unit').value = '';
+      document.getElementById('inv-reorder').value = '';
+    }
+
+    function renderInventoryList() {
+      const tbody = document.getElementById('inventory-list');
+      tbody.innerHTML = '';
+      const items = allData['inventory'] || [];
+      items.forEach(item => {
+        const isLow = item.current_quantity <= item.reorder_level;
+        const status = isLow ? '<span class="text-red-600 font-semibold">⚠️ Low Stock</span>' : '<span class="text-green-600 font-semibold">✓ In Stock</span>';
+        
+        tbody.innerHTML += `
+          <tr class="border-b hover:bg-gray-50">
+            <td class="px-6 py-3 text-gray-700">${item.inventory_item}</td>
+            <td class="px-6 py-3 text-gray-700">${item.inventory_type}</td>
+            <td class="px-6 py-3 text-gray-700">${item.current_quantity}</td>
+            <td class="px-6 py-3 text-gray-700">${item.measure_unit}</td>
+            <td class="px-6 py-3 text-gray-700">${item.reorder_level}</td>
+            <td class="px-6 py-3">${status}</td>
+            <td class="px-6 py-3 text-center">
+              <button onclick="deleteRecord('${item.__backendId}', 'inventory')" class="text-red-600 hover:text-red-800 text-sm font-medium">Delete</button>
+            </td>
+          </tr>
+        `;
+      });
+    }
+
+    // Worker Functions
+    async function addWorker() {
+      const name = document.getElementById('worker-name').value;
+      const phone = document.getElementById('worker-phone').value;
+      const role = document.getElementById('worker-role').value;
+
+      if (!name || !phone || !role) return alert('Please fill all fields');
+
+      if (window.dataSdk) {
+        await window.dataSdk.create({
+          worker_name: name,
+          worker_phone: phone,
+          worker_role: role
+        });
+      }
+
+      document.getElementById('worker-name').value = '';
+      document.getElementById('worker-phone').value = '';
+      document.getElementById('worker-role').value = '';
+    }
+
+    function renderWorkersList() {
+      const tbody = document.getElementById('workers-list');
+      tbody.innerHTML = '';
+      const items = allData['worker'] || [];
+      items.forEach(item => {
+        tbody.innerHTML += `
+          <tr class="border-b hover:bg-gray-50">
+            <td class="px-6 py-3 text-gray-700">${item.worker_name}</td>
+            <td class="px-6 py-3 text-gray-700">${item.worker_phone}</td>
+            <td class="px-6 py-3 text-gray-700">${item.worker_role}</td>
+            <td class="px-6 py-3 text-center">
+              <button onclick="deleteRecord('${item.__backendId}', 'worker')" class="text-red-600 hover:text-red-800 text-sm font-medium">Delete</button>
+            </td>
+          </tr>
+        `;
+      });
+    }
+
+    // Harvest Functions
+    async function addHarvest() {
+      const crop = document.getElementById('harvest-crop').value;
+      const date = document.getElementById('harvest-date').value;
+      const section = document.getElementById('harvest-section').value;
+      const location = document.getElementById('harvest-location').value;
+      const quantity = parseFloat(document.getElementById('harvest-quantity').value);
+      const unit = document.getElementById('harvest-unit').value;
+      const quality = document.getElementById('harvest-quality').value;
+
+      if (!crop || !date || !section || !quantity || !unit) return alert('Please fill all required fields');
+
+      if (window.dataSdk) {
+        await window.dataSdk.create({
+          harvest_crop: crop,
+          harvest_date: date,
+          crop_section: section,
+          location: location,
+          harvest_quantity: quantity,
+          harvest_unit: unit,
+          quality_metric: quality
+        });
+      }
+
+      document.getElementById('harvest-crop').value = '';
+      document.getElementById('harvest-date').value = '';
+      document.getElementById('harvest-section').value = '';
+      document.getElementById('harvest-quantity').value = '';
+      document.getElementById('harvest-unit').value = '';
+      document.getElementById('harvest-quality').value = '';
+    }
+
+    function renderHarvestList() {
+      const tbody = document.getElementById('harvest-list');
+      tbody.innerHTML = '';
+      const items = allData['harvest'] || [];
+      items.forEach(item => {
+        tbody.innerHTML += `
+          <tr class="border-b hover:bg-gray-50">
+            <td class="px-6 py-3 text-gray-700">${item.harvest_crop}</td>
+            <td class="px-6 py-3 text-gray-700">${item.harvest_date}</td>
+            <td class="px-6 py-3 text-gray-700">${item.crop_section}</td>
+            <td class="px-6 py-3 text-gray-700">${item.harvest_quantity} ${item.harvest_unit}</td>
+            <td class="px-6 py-3 text-gray-700">${item.location}</td>
+            <td class="px-6 py-3 text-gray-700"><span class="px-3 py-1 rounded-full text-sm ${item.quality_metric === 'Good' ? 'bg-green-100 text-green-800' : item.quality_metric === 'Fair' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'}">${item.quality_metric || '-'}</span></td>
+            <td class="px-6 py-3 text-center">
+              <button onclick="deleteRecord('${item.__backendId}', 'harvest')" class="text-red-600 hover:text-red-800 text-sm font-medium">Delete</button>
+            </td>
+          </tr>
+        `;
+      });
+    }
+
+    // Delete Record
+    async function deleteRecord(id, type) {
+      const items = allData[type] || [];
+      const item = items.find(i => i.__backendId === id);
+      if (item && window.dataSdk) {
+        await window.dataSdk.delete(item);
+      }
+    }
+
+    // Expenditure Chart
+    function updateExpenditureChart() {
+      const items = allData['expense'] || [];
+      const typeMap = {};
+
+      items.forEach(item => {
+        if (!typeMap[item.expense_type]) typeMap[item.expense_type] = 0;
+        typeMap[item.expense_type] += item.expense_amount;
+      });
+
+      const ctx = document.getElementById('expenditureChart');
+      if (ctx && Object.keys(typeMap).length > 0) {
+        if (chartInstance) chartInstance.destroy();
+        chartInstance = new Chart(ctx, {
+          type: 'doughnut',
+          data: {
+            labels: Object.keys(typeMap),
+            datasets: [{
+              data: Object.values(typeMap),
+              backgroundColor: ['#3b82f6', '#8b5cf6', '#f59e0b', '#ef4444'],
+              borderColor: '#fff',
+              borderWidth: 2
+            }]
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              legend: { position: 'bottom' }
+            }
+          }
+        });
+      }
+    }
+
+    // Tab switching
+    function switchTab(tabName) {
+      document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
+      document.querySelectorAll('.sidebar-link').forEach(link => link.classList.remove('active'));
+
+      const contentId = tabName + '-content';
+      const content = document.getElementById(contentId);
+      if (content) content.classList.remove('hidden');
+
+      const link = document.querySelector(`[data-tab="${tabName}"]`);
+      if (link) link.classList.add('active');
+
+      const titles = {
+        dashboard: 'Dashboard',
+        budget: 'Farm Budget',
+        expenditure: 'Expenditure',
+        crops: 'Crops Management',
+        medications: 'Medications',
+        inventory: 'Inventory',
+        workers: 'Workers',
+        harvest: 'Harvest'
+      };
+      document.getElementById('page-title').textContent = titles[tabName] || 'Dashboard';
+    }
+
+    // Initialize
+    window.addEventListener('load', () => {
+      lucide.createIcons();
+      initializeApp();
+      loadWeather();
+      setInterval(loadWeather, 600000);
+    });
+  </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9e5e5d5ac46573b5',t:'MTc3NTExNzUwNi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
